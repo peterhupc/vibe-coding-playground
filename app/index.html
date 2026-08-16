@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>我的工作台｜任務＋番茄鐘＋習慣</title>
+<title>我的工作台｜Productivity App</title>
 <style>
   :root {
     --bg: #f5f5f4;
@@ -165,7 +165,7 @@
 
   /* 習慣追蹤器 */
   .emoji-picker { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-  .emoji-picker button { background: var(--cell); font-size: 20px; padding: 6px 10px; border-radius: 10px; }
+  .emoji-picker button { background: var(--cell); font-size: 18px; padding: 5px 9px; border-radius: 10px; }
   .emoji-picker button.active { outline: 3px solid var(--accent); }
   .habit {
     display: flex;
@@ -225,6 +225,64 @@
   .chart .day-label.today { font-weight: 700; color: var(--accent); }
   .chart-note { font-size: 12px; color: var(--muted); margin-top: 14px; }
 
+  /* 工作紀錄／查詢／分析（Productivity App） */
+  .session-form { display: flex; flex-direction: column; gap: 10px; }
+  .row2 { display: flex; gap: 10px; }
+  .row2 > * { flex: 1; }
+  .session-now { display: flex; align-items: center; gap: 10px; background: var(--soft); border-radius: 12px; padding: 12px 14px; }
+  .session-now .s-text { flex: 1; font-size: 15px; word-break: break-word; }
+  .session-now .s-timer { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); white-space: nowrap; }
+  .btn-end { background: var(--danger); color: #fff; }
+  .btn-cancel { background: var(--gray-bg); color: var(--muted); }
+  .rec-list { display: flex; flex-direction: column; gap: 8px; }
+  .rec { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: var(--row); border-radius: 12px; border: 1px solid var(--row-border); }
+  .rec .rec-time { font-weight: 700; white-space: nowrap; color: var(--accent); font-size: 14px; padding-top: 1px; }
+  .rec .rec-main { flex: 1; min-width: 0; }
+  .rec .rec-text { font-size: 15px; word-break: break-word; }
+  .rec .rec-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; margin-right: 6px; }
+  .badge-session { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+  .badge-timer { background: color-mix(in srgb, var(--work) 15%, transparent); color: var(--work); }
+  .badge-manual { background: color-mix(in srgb, var(--break) 15%, transparent); color: var(--break); }
+  .rec .rec-actions { display: flex; gap: 2px; flex-shrink: 0; }
+  .rec .act { background: none; color: var(--muted); font-size: 15px; padding: 4px 6px; }
+  .rec .act:hover { color: var(--ink); }
+  .rec .act.danger { color: var(--danger); }
+  .rec.editing { align-items: stretch; }
+  .rec-edit { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
+  .rec-edit input[type="date"] { padding: 10px 12px; border: 2px solid var(--input-border); border-radius: 12px; font-size: 14px; background: var(--card); color: var(--ink); outline: none; }
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-row input[type="text"] { flex: 1; min-width: 160px; }
+  .filter-row input[type="date"], .filter-row select {
+    padding: 10px 12px; border: 2px solid var(--input-border); border-radius: 12px;
+    font-size: 14px; background: var(--card); color: var(--ink); outline: none;
+  }
+  .filter-row select:focus, .filter-row input[type="date"]:focus { border-color: var(--accent); }
+  .rec-count { font-size: 13px; color: var(--muted); margin-top: 10px; }
+  .day-title { font-size: 13px; font-weight: 700; color: var(--muted); margin: 12px 0 6px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .kpi { background: var(--row); border: 1px solid var(--row-border); border-radius: 14px; padding: 12px 14px; }
+  .kpi .v { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .kpi .k { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .daily-summary { display: flex; flex-direction: column; gap: 8px; }
+  .sum-row { font-size: 13px; line-height: 1.6; background: var(--row); border: 1px solid var(--row-border); border-radius: 10px; padding: 8px 12px; }
+  .sum-row .d { font-weight: 700; margin-right: 6px; }
+  .ai-settings { display: flex; flex-direction: column; gap: 10px; }
+  .ai-row { display: flex; gap: 10px; }
+  .ai-row > * { flex: 1; min-width: 0; }
+  .ai-key-status { font-size: 12px; color: var(--muted); }
+  .btn-ai { background: var(--accent); color: #fff; }
+  .btn-warn { background: var(--danger); color: #fff; }
+  .ai-out { margin-top: 12px; background: var(--soft); border-radius: 12px; padding: 14px; font-size: 14px; line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
+  .sens-note { font-size: 12px; color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; line-height: 1.6; }
+  .danger-zone { border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent); }
+  .file-btn { display: inline-block; text-align: center; cursor: pointer; background: var(--soft); color: var(--accent); padding: 10px 18px; border-radius: 12px; font-weight: 600; font-size: 14px; }
+  input[type="number"] {
+    width: 100%; padding: 12px 14px; border: 2px solid var(--input-border); border-radius: 12px;
+    font-size: 15px; outline: none; background: var(--card); color: var(--ink);
+  }
+  input[type="number"]:focus { border-color: var(--accent); }
+
   /* RWD：手機 */
   @media (max-width: 480px) {
     body { padding: 24px 12px; }
@@ -239,6 +297,12 @@
     .day-heads span { width: calc((100vw - 120px) / 7); max-width: 38px; }
     .chart { height: 140px; gap: 6px; }
     .emoji-picker button { font-size: 17px; padding: 5px 8px; }
+    .tabs button { font-size: 13px; padding: 10px 4px; }
+    .row2 { flex-direction: column; }
+    .filter-row { flex-direction: column; }
+    .filter-row input[type="text"] { min-width: 0; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .ai-row { flex-direction: column; }
   }
 </style>
 </head>
@@ -252,6 +316,9 @@
     <div class="tabs">
       <button class="active" id="tab-work" data-panel="panel-work">🍅 工作</button>
       <button id="tab-habits" data-panel="panel-habits">📈 習慣</button>
+      <button id="tab-records" data-panel="panel-records">📝 紀錄</button>
+      <button id="tab-query" data-panel="panel-query">🔍 查詢</button>
+      <button id="tab-stats" data-panel="panel-stats">📊 分析</button>
     </div>
 
     <!-- 工作：番茄鐘＋任務 -->
@@ -304,6 +371,122 @@
         <div class="day-heads" id="day-heads"></div>
         <div id="habit-list"></div>
         <div class="empty" id="habit-empty">還沒有習慣，先新增一個吧</div>
+      </div>
+    </div>
+
+    <!-- 紀錄：工作階段＋手動日誌＋最近紀錄 -->
+    <div class="panel" id="panel-records">
+      <div class="card">
+        <h2>⏱️ 工作階段</h2>
+        <div class="session-now" id="session-now" style="display:none">
+          <span class="s-text" id="session-text"></span>
+          <span class="s-timer" id="session-timer">00:00</span>
+          <button class="btn-end" id="btn-end-session">結束</button>
+          <button class="btn-cancel" id="btn-cancel-session">取消</button>
+        </div>
+        <div class="session-form" id="session-form">
+          <div class="row2">
+            <input type="text" id="session-input" placeholder="現在在做什麼？例如：寫週報">
+            <input type="number" id="session-est" min="0" step="5" placeholder="預估(分)">
+          </div>
+          <div>
+            <button class="btn-add" id="btn-start-session">▶ 開始工作階段</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>✍️ 手動補寫日誌</h2>
+        <div class="session-form">
+          <div class="row2">
+            <input type="text" id="log-input" placeholder="記錄一件完成的事或心得">
+            <input type="number" id="log-min" min="0" step="5" placeholder="花費(分)">
+          </div>
+          <div>
+            <button class="btn-add" id="btn-add-log">存日誌</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📖 最近紀錄</h2>
+        <div class="rec-list" id="rec-list"></div>
+        <div class="empty" id="rec-empty">還沒有任何工作紀錄。番茄鐘完成、工作階段結束都會自動存檔。</div>
+      </div>
+    </div>
+
+    <!-- 查詢 -->
+    <div class="panel" id="panel-query">
+      <div class="card">
+        <h2>🔍 查詢工作紀錄</h2>
+        <div class="filter-row">
+          <input type="text" id="q-keyword" placeholder="關鍵字，例如：週報">
+          <input type="date" id="q-from">
+          <input type="date" id="q-to">
+        </div>
+        <div class="filter-row" style="margin-top:8px">
+          <select id="q-type">
+            <option value="">全部類型</option>
+            <option value="session">工作階段</option>
+            <option value="timer">番茄鐘</option>
+            <option value="manual">日誌</option>
+          </select>
+          <button class="btn-add" id="btn-query">查詢</button>
+        </div>
+        <div class="rec-count" id="q-count"></div>
+        <div class="rec-list" id="q-list" style="margin-top:10px"></div>
+        <div class="empty" id="q-empty">輸入關鍵字或日期範圍查詢，或直接按「查詢」看全部。</div>
+      </div>
+    </div>
+
+    <!-- 分析 -->
+    <div class="panel" id="panel-stats">
+      <div class="card">
+        <h2>📊 本機統計</h2>
+        <div class="kpis" id="kpis"></div>
+        <div class="stats-sub" id="stats-sub2"></div>
+        <div class="chart" id="chart-hours"></div>
+        <div class="chart-note">近 7 天每天的工作總時數（含所有紀錄類型）</div>
+      </div>
+
+      <div class="card">
+        <h2>🗒️ 每日小結</h2>
+        <div class="daily-summary" id="daily-sum"></div>
+      </div>
+
+      <div class="card">
+        <h2>🤖 AI 總結（可選）</h2>
+        <div class="sens-note">⚠️ 按下「生成總結」才會把近 7 天紀錄送出至你指定的 API 端點。內容可能含工作敏感資訊，請確認端點與金鑰安全。</div>
+        <div class="ai-settings">
+          <div class="ai-row">
+            <input type="text" id="ai-endpoint" placeholder="API 端點（OpenAI 相容，預設 OpenRouter）">
+            <input type="text" id="ai-model" placeholder="模型（預設 claude-3-5-haiku）">
+          </div>
+          <div class="ai-row">
+            <input type="password" id="ai-key" placeholder="API key（只存本機）">
+            <button class="btn-theme" id="btn-save-key">儲存</button>
+          </div>
+          <div class="ai-key-status" id="ai-key-status"></div>
+          <div class="ai-row">
+            <button class="btn-ai" id="btn-ai-summary">生成總結（近 7 天）</button>
+            <button class="btn-warn" id="btn-clear-key">清除金鑰</button>
+          </div>
+        </div>
+        <div class="ai-out" id="ai-out" style="display:none"></div>
+      </div>
+
+      <div class="card danger-zone">
+        <h2>⚙️ 資料管理</h2>
+        <div class="session-form">
+          <div class="row2">
+            <button class="btn-add" id="btn-export">⬇ 匯出 JSON 備份</button>
+            <label class="file-btn" for="import-file">⬆ 匯入 JSON</label>
+            <input type="file" id="import-file" accept=".json,application/json" style="display:none">
+          </div>
+          <div class="row2">
+            <button class="btn-warn" id="btn-clear-records">🗑 清空所有工作紀錄</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -427,7 +610,11 @@
       remain--;
       if (remain <= 0) {
         playAlarm();
-        if (mode === 'work') { cycles++; mode = 'break'; remain = BREAK; }
+        if (mode === 'work') {
+          cycles++; mode = 'break'; remain = BREAK;
+          addRecord({ id: uid(), date: dstr(new Date()), ts: Date.now(), type: 'timer', text: `🍅 番茄鐘（${workMin} 分鐘）`, min: workMin });
+          renderRecent(); renderProdStats();
+        }
         else { mode = 'work'; remain = workMin * 60; }
         renderTimer();
         return;
@@ -578,12 +765,14 @@
     habitEmpty.style.display = habits.length ? 'none' : 'block';
   };
 
-  const EMOJIS = ['💧', '🏃', '📖', '🧘', '💪', '🥗', '😴', '✍️', '🦷', '📵'];
+  const EMOJIS = ['💧', '🏃', '📖', '🧘', '💪', '🥗', '😴', '✍️', '🦷', '📵', '🚶', '🏋️', '🚴', '🏊', '⚽', '🍎', '💰', '🧾', '📈', '🗣️', '💻', '🧹', '🧺', '☕', '🚭', '🍺', '🍬', '📞', '🙏', '💆', '🧴', '⏰', '🥦', '🥛', '🏔️', '🎯', '🥤', '👨‍👩‍👧', '💊'];
+  const EMOJI_NAMES = { '💧': '喝水', '🏃': '跑步', '📖': '閱讀', '🧘': '瑜珈／冥想', '💪': '健身', '🥗': '健康飲食', '😴': '早睡', '✍️': '寫作／日記', '🦷': '刷牙／牙線', '📵': '少用手機', '🚶': '走路／步數', '🏋️': '重量訓練', '🚴': '騎車', '🏊': '游泳', '⚽': '球類運動', '🍎': '吃水果', '💰': '存錢', '🧾': '記帳', '📈': '投資理財', '🗣️': '學外語', '💻': '學習／寫程式', '🧹': '打掃整理', '🧺': '洗衣', '☕': '少喝咖啡', '🚭': '戒菸', '🍺': '少喝酒', '🍬': '戒甜食', '📞': '聯絡親友', '🙏': '感恩／靜心', '💆': '保養／護膚', '🧴': '防曬／擦乳液', '⏰': '早起', '🥦': '吃蔬菜', '🥛': '喝牛奶／補鈣', '🏔️': '爬山／健行', '🎯': '專注／目標', '🥤': '少喝含糖飲料', '👨‍👩‍👧': '陪伴家人', '💊': '保健食品／吃藥' };
   let selectedEmoji = '💧';
   const picker = document.getElementById('emoji-picker');
   EMOJIS.forEach((e) => {
     const b = document.createElement('button');
     b.textContent = e;
+    b.title = EMOJI_NAMES[e] || e;
     if (e === selectedEmoji) b.classList.add('active');
     b.addEventListener('click', () => {
       selectedEmoji = e;
@@ -605,6 +794,399 @@
   document.getElementById('btn-add-habit').addEventListener('click', addHabit);
   habitInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addHabit(); });
   renderHabits();
+
+  /* ===== 工作紀錄（Productivity App） ===== */
+  const RECORDS_KEY = 'prod-records';
+  const ACTIVE_SESSION_KEY = 'prod-active-session';
+  const AI_KEY = 'prod-ai-key';
+  const AI_ENDPOINT_KEY = 'prod-ai-endpoint';
+  const AI_MODEL_KEY = 'prod-ai-model';
+
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem(RECORDS_KEY) || '[]'); } catch (e) { records = []; }
+  const saveRecords = () => localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+  const addRecord = (rec) => { records.push(rec); saveRecords(); };
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const fmtHM = (ts) => { const d = new Date(ts); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+  const fmtMin = (min) => { min = Math.round(min); const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h} 小時${m ? ` ${m} 分` : ''}` : `${m} 分`; };
+  const recBadge = (type) => ({ session: '工作階段', timer: '番茄鐘', manual: '日誌' }[type] || type);
+
+  const recRow = (r) => {
+    const div = document.createElement('div');
+    div.className = 'rec';
+    const time = document.createElement('div');
+    time.className = 'rec-time';
+    time.textContent = r.min ? fmtMin(r.min) : fmtHM(r.ts);
+    const main = document.createElement('div');
+    main.className = 'rec-main';
+    const txt = document.createElement('div');
+    txt.className = 'rec-text';
+    txt.textContent = r.text || '（無內容）';
+    const meta = document.createElement('div');
+    meta.className = 'rec-meta';
+    const badge = `<span class="badge badge-${r.type}">${recBadge(r.type)}</span>`;
+    const extra = (r.est ? ` · 預估 ${r.est} 分` : '') + (r.type === 'session' && r.done === false ? ' · 未完成' : '');
+    meta.innerHTML = `${badge} ${r.date} ${fmtHM(r.ts)}${extra}`;
+    main.append(txt, meta);
+    const actions = document.createElement('div');
+    actions.className = 'rec-actions';
+    const edit = document.createElement('button');
+    edit.className = 'act';
+    edit.textContent = '✏️';
+    edit.title = '編輯';
+    edit.addEventListener('click', () => startEdit(r, div));
+    const del = document.createElement('button');
+    del.className = 'act danger';
+    del.textContent = '🗑';
+    del.title = '刪除這筆';
+    del.addEventListener('click', () => removeRecord(r.id));
+    actions.append(edit, del);
+    div.append(time, main, actions);
+    return div;
+  };
+
+  const refreshViews = () => { renderRecent(); renderProdStats(); applyQuery(); };
+  const updateRecord = (id, patch) => {
+    const idx = records.findIndex((r) => r.id === id);
+    if (idx === -1) return;
+    records[idx] = { ...records[idx], ...patch };
+    saveRecords();
+    refreshViews();
+  };
+  const removeRecord = (id) => {
+    records = records.filter((r) => r.id !== id);
+    saveRecords();
+    refreshViews();
+  };
+  const startEdit = (r, row) => {
+    const box = document.createElement('div');
+    box.className = 'rec-edit';
+    const t = document.createElement('input');
+    t.type = 'text';
+    t.value = r.text || '';
+    t.placeholder = '內容';
+    const m = document.createElement('input');
+    m.type = 'number';
+    m.min = 0;
+    m.value = r.min || '';
+    m.placeholder = '分鐘';
+    const d = document.createElement('input');
+    d.type = 'date';
+    d.value = r.date || '';
+    const btns = document.createElement('div');
+    btns.className = 'row2';
+    const save = document.createElement('button');
+    save.className = 'btn-add';
+    save.textContent = '儲存';
+    save.addEventListener('click', () => {
+      const text = t.value.trim();
+      if (!text) { t.focus(); return; }
+      updateRecord(r.id, { text, min: parseInt(m.value, 10) || null, date: d.value || r.date });
+    });
+    const cancel = document.createElement('button');
+    cancel.className = 'btn-cancel';
+    cancel.textContent = '取消';
+    cancel.addEventListener('click', refreshViews);
+    btns.append(save, cancel);
+    box.append(t, m, d, btns);
+    row.innerHTML = '';
+    row.classList.add('editing');
+    row.appendChild(box);
+    t.focus();
+  };
+
+  const renderRecent = () => {
+    const list = document.getElementById('rec-list');
+    list.innerHTML = '';
+    records.slice(-10).reverse().forEach((r) => list.appendChild(recRow(r)));
+    document.getElementById('rec-empty').style.display = records.length ? 'none' : 'block';
+  };
+
+  /* 工作階段 */
+  let activeSession = null;
+  try { activeSession = JSON.parse(localStorage.getItem(ACTIVE_SESSION_KEY) || 'null'); } catch (e) { activeSession = null; }
+  const saveActiveSession = () => localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(activeSession));
+  let sessTimer = null;
+  const tickSession = () => {
+    if (!activeSession) return;
+    document.getElementById('session-timer').textContent = fmt(Math.floor((Date.now() - activeSession.startTs) / 1000));
+  };
+  const renderSession = () => {
+    const nowEl = document.getElementById('session-now');
+    const form = document.getElementById('session-form');
+    nowEl.style.display = activeSession ? 'flex' : 'none';
+    form.style.display = activeSession ? 'none' : 'flex';
+    if (activeSession) document.getElementById('session-text').textContent = activeSession.text;
+  };
+  const stopSessionTimer = () => { if (sessTimer) { clearInterval(sessTimer); sessTimer = null; } };
+
+  document.getElementById('btn-start-session').addEventListener('click', () => {
+    const input = document.getElementById('session-input');
+    const text = input.value.trim();
+    if (!text) { input.focus(); return; }
+    const est = parseInt(document.getElementById('session-est').value, 10) || null;
+    activeSession = { text, est, startTs: Date.now() };
+    saveActiveSession();
+    input.value = '';
+    document.getElementById('session-est').value = '';
+    renderSession();
+    stopSessionTimer();
+    sessTimer = setInterval(tickSession, 1000);
+    tickSession();
+  });
+  document.getElementById('btn-end-session').addEventListener('click', () => {
+    if (!activeSession) return;
+    const min = Math.round((Date.now() - activeSession.startTs) / 60000 * 10) / 10;
+    addRecord({ id: uid(), date: dstr(new Date()), ts: activeSession.startTs, type: 'session', text: activeSession.text, est: activeSession.est || null, min, done: true });
+    stopSessionTimer();
+    activeSession = null;
+    saveActiveSession();
+    renderSession();
+    renderRecent();
+    renderProdStats();
+  });
+  document.getElementById('btn-cancel-session').addEventListener('click', () => {
+    stopSessionTimer();
+    activeSession = null;
+    saveActiveSession();
+    renderSession();
+  });
+
+  /* 手動補寫日誌 */
+  const addLog = () => {
+    const input = document.getElementById('log-input');
+    const text = input.value.trim();
+    if (!text) { input.focus(); return; }
+    const min = parseInt(document.getElementById('log-min').value, 10) || null;
+    addRecord({ id: uid(), date: dstr(new Date()), ts: Date.now(), type: 'manual', text, min });
+    input.value = '';
+    document.getElementById('log-min').value = '';
+    renderRecent();
+    renderProdStats();
+  };
+  document.getElementById('btn-add-log').addEventListener('click', addLog);
+  document.getElementById('log-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') addLog(); });
+
+  /* 查詢 */
+  const applyQuery = () => {
+    const kw = document.getElementById('q-keyword').value.trim().toLowerCase();
+    const from = document.getElementById('q-from').value;
+    const to = document.getElementById('q-to').value;
+    const type = document.getElementById('q-type').value;
+    const list = document.getElementById('q-list');
+    list.innerHTML = '';
+    const result = records.filter((r) => {
+      if (type && r.type !== type) return false;
+      if (from && r.date < from) return false;
+      if (to && r.date > to) return false;
+      if (kw && !((r.text || '').toLowerCase().includes(kw))) return false;
+      return true;
+    });
+    document.getElementById('q-count').textContent = `找到 ${result.length} 筆`;
+    document.getElementById('q-empty').style.display = result.length ? 'none' : 'block';
+    const groups = {};
+    result.slice().reverse().forEach((r) => { (groups[r.date] = groups[r.date] || []).push(r); });
+    Object.keys(groups).sort((a, b) => b.localeCompare(a)).forEach((date) => {
+      const day = document.createElement('div');
+      day.className = 'timeline-day';
+      const title = document.createElement('div');
+      title.className = 'day-title';
+      const total = groups[date].reduce((s, r) => s + (r.min || 0), 0);
+      title.textContent = `${date}（${groups[date].length} 筆${total ? `，共 ${fmtMin(total)}` : ''}）`;
+      day.appendChild(title);
+      groups[date].forEach((r) => day.appendChild(recRow(r)));
+      list.appendChild(day);
+    });
+  };
+  document.getElementById('btn-query').addEventListener('click', applyQuery);
+  ['q-from', 'q-to', 'q-type'].forEach((id) => document.getElementById(id).addEventListener('change', applyQuery));
+  document.getElementById('q-keyword').addEventListener('input', applyQuery);
+
+  /* 本機統計 */
+  const last7 = () => { const arr = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); arr.push(d); } return arr; };
+  const renderProdStats = () => {
+    const kpis = document.getElementById('kpis');
+    kpis.innerHTML = '';
+    const totalMin = records.reduce((s, r) => s + (r.min || 0), 0);
+    const todayMin = records.filter((r) => r.date === todayStr).reduce((s, r) => s + (r.min || 0), 0);
+    const days = last7();
+    const weekMin = days.reduce((s, d) => s + records.filter((r) => r.date === dstr(d)).reduce((x, r) => x + (r.min || 0), 0), 0);
+    const sessions = records.filter((r) => r.type === 'session');
+    const doneSessions = sessions.filter((r) => r.done);
+    const kpi = (v, k) => {
+      const el = document.createElement('div');
+      el.className = 'kpi';
+      const vv = document.createElement('div');
+      vv.className = 'v';
+      vv.textContent = v;
+      const kk = document.createElement('div');
+      kk.className = 'k';
+      kk.textContent = k;
+      el.append(vv, kk);
+      return el;
+    };
+    kpis.append(
+      kpi(fmtMin(totalMin), '累計時數'),
+      kpi(fmtMin(todayMin), '今日時數'),
+      kpi(fmtMin(weekMin), '近 7 天時數'),
+      kpi(String(records.length), '總筆數'),
+      kpi(sessions.length ? `${Math.round(doneSessions.length / sessions.length * 100)}%` : '—', '階段完成率')
+    );
+    const chart = document.getElementById('chart-hours');
+    chart.innerHTML = '';
+    const max = Math.max(1, ...days.map((d) => records.filter((r) => r.date === dstr(d)).reduce((s, r) => s + (r.min || 0), 0)));
+    days.forEach((d, di) => {
+      const val = records.filter((r) => r.date === dstr(d)).reduce((s, r) => s + (r.min || 0), 0);
+      const col = document.createElement('div');
+      col.className = 'col';
+      const wrap = document.createElement('div');
+      wrap.className = 'bar-wrap';
+      const bar = document.createElement('div');
+      bar.className = 'bar' + (val === 0 ? ' zero' : '');
+      bar.style.height = `${Math.max((val / max) * 100, val ? 4 : 0)}%`;
+      const pct = document.createElement('span');
+      pct.className = 'pct';
+      pct.textContent = val ? fmtMin(val) : '';
+      bar.appendChild(pct);
+      wrap.appendChild(bar);
+      const label = document.createElement('span');
+      label.className = 'day-label' + (dstr(d) === todayStr ? ' today' : '');
+      label.textContent = di === 6 ? '今' : wd[d.getDay()];
+      col.append(wrap, label);
+      chart.appendChild(col);
+    });
+    const weekCount = records.filter((r) => days.some((d) => dstr(d) === r.date)).length;
+    document.getElementById('stats-sub2').textContent = `近 7 天 · 共 ${weekCount} 筆紀錄（含所有類型）`;
+    const sum = document.getElementById('daily-sum');
+    sum.innerHTML = '';
+    days.slice().reverse().forEach((d) => {
+      const dayRecs = records.filter((r) => r.date === dstr(d));
+      if (!dayRecs.length) return;
+      const row = document.createElement('div');
+      row.className = 'sum-row';
+      const total = dayRecs.reduce((s, r) => s + (r.min || 0), 0);
+      const texts = dayRecs.map((r) => r.text).filter(Boolean).slice(0, 3).join('；');
+      const dTitle = document.createElement('span');
+      dTitle.className = 'd';
+      dTitle.textContent = `${d.getMonth() + 1}/${d.getDate()}`;
+      const body = document.createElement('span');
+      body.textContent = `${dayRecs.length} 筆，共 ${fmtMin(total)}${texts ? ` — ${texts}` : ''}`;
+      row.append(dTitle, body);
+      sum.appendChild(row);
+    });
+    if (!sum.children.length) {
+      const e = document.createElement('div');
+      e.className = 'empty';
+      e.textContent = '這週還沒有任何紀錄';
+      sum.appendChild(e);
+    }
+  };
+
+  /* AI 總結（可選） */
+  const loadAiSettings = () => {
+    const endpoint = localStorage.getItem(AI_ENDPOINT_KEY) || 'https://openrouter.ai/api/v1/chat/completions';
+    const model = localStorage.getItem(AI_MODEL_KEY) || 'anthropic/claude-3-5-haiku';
+    const key = localStorage.getItem(AI_KEY) || '';
+    document.getElementById('ai-endpoint').value = endpoint;
+    document.getElementById('ai-model').value = model;
+    document.getElementById('ai-key').value = key;
+    document.getElementById('ai-key-status').textContent = key ? '🔑 金鑰已儲存（僅本機 localStorage）' : '尚未設定金鑰';
+  };
+  document.getElementById('btn-save-key').addEventListener('click', () => {
+    localStorage.setItem(AI_ENDPOINT_KEY, document.getElementById('ai-endpoint').value.trim());
+    localStorage.setItem(AI_MODEL_KEY, document.getElementById('ai-model').value.trim());
+    const key = document.getElementById('ai-key').value.trim();
+    if (key) localStorage.setItem(AI_KEY, key);
+    loadAiSettings();
+  });
+  document.getElementById('btn-clear-key').addEventListener('click', () => {
+    localStorage.removeItem(AI_KEY);
+    document.getElementById('ai-key').value = '';
+    loadAiSettings();
+  });
+  const aiOut = document.getElementById('ai-out');
+  document.getElementById('btn-ai-summary').addEventListener('click', async () => {
+    const key = localStorage.getItem(AI_KEY);
+    const endpoint = document.getElementById('ai-endpoint').value.trim();
+    const model = document.getElementById('ai-model').value.trim();
+    if (!key) { alert('請先在分析頁設定 API key'); return; }
+    const days = last7();
+    const recs = records.filter((r) => days.some((d) => dstr(d) === r.date));
+    if (!recs.length) { alert('近 7 天沒有紀錄可總結'); return; }
+    const lines = recs.map((r) => `[${r.date} ${fmtHM(r.ts)} ${recBadge(r.type)}${r.min ? ' ' + fmtMin(r.min) : ''}] ${r.text || ''}`).join('\n');
+    const prompt = '以下是我最近 7 天的工作紀錄，請用繁體中文給我：(1) 簡短總結我做了什麼 (2) 我發現的生產力模式或問題 (3) 3 條具體可執行的改善建議。\n\n' + lines;
+    aiOut.style.display = 'block';
+    aiOut.textContent = '正在送出紀錄至指定端點…';
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+        body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: 0.5 })
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(`HTTP ${res.status} ${t.slice(0, 200)}`);
+      }
+      const data = await res.json();
+      const content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '（無法解析回應）';
+      aiOut.textContent = content;
+    } catch (err) {
+      aiOut.textContent = '送出失敗：' + err.message;
+    }
+  });
+
+  /* 資料管理 */
+  document.getElementById('btn-export').addEventListener('click', () => {
+    const payload = { app: 'productivity-app', exportedAt: new Date().toISOString(), records };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `worklog-backup-${dstr(new Date())}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  document.getElementById('import-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        const arr = Array.isArray(data) ? data : (data.records || []);
+        if (!Array.isArray(arr)) throw new Error('格式不符');
+        records = arr.filter((r) => r && r.ts && r.text !== undefined).map((r) => ({ ...r, date: r.date || dstr(new Date(r.ts)) }));
+        saveRecords();
+        renderRecent();
+        renderProdStats();
+        document.getElementById('q-list').innerHTML = '';
+        alert(`已匯入 ${records.length} 筆紀錄`);
+      } catch (err) {
+        alert('匯入失敗：' + err.message);
+      }
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  });
+  document.getElementById('btn-clear-records').addEventListener('click', () => {
+    if (!confirm('確定清空所有工作紀錄？此操作無法復原。')) return;
+    if (!confirm('再次確認：將刪除全部工作紀錄（含未結束的工作階段）。')) return;
+    records = [];
+    saveRecords();
+    stopSessionTimer();
+    activeSession = null;
+    saveActiveSession();
+    renderSession();
+    renderRecent();
+    renderProdStats();
+    document.getElementById('q-list').innerHTML = '';
+  });
+
+  renderRecent();
+  renderProdStats();
+  renderSession();
+  if (activeSession) { sessTimer = setInterval(tickSession, 1000); tickSession(); }
+  loadAiSettings();
 </script>
 </body>
 </html>
