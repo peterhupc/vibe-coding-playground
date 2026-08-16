@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -66,6 +66,17 @@
   }
   .wrap { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 20px; }
   .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+  .btn-google { background: #fff; color: #1c1917; border: 2px solid var(--input-border); width: 100%; font-weight: 700; }
+  body.dark .btn-google { background: var(--card); color: var(--ink); }
+  .auth-divider { text-align: center; font-size: 12px; color: var(--muted); margin: 12px 0; }
+  .auth-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .auth-row input { flex: 1; min-width: 150px; }
+  .auth-row button { flex: 1; }
+  .auth-msg { font-size: 13px; color: var(--warn); margin-top: 8px; }
+  .auth-note { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+  #auth-in { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .auth-inline { font-size: 14px; }
   h1 { font-size: 22px; }
   .card {
     background: var(--card);
@@ -313,6 +324,27 @@
       <button class="btn-theme" id="btn-theme">🌙 深色</button>
     </div>
 
+    <div class="card" id="auth-card">
+      <div id="auth-out">
+        <button class="btn-google" id="btn-google">🌐 使用 Google 登入</button>
+        <div class="auth-divider">或使用 Email／密碼</div>
+        <div class="auth-row">
+          <input type="email" id="auth-email" placeholder="Email">
+          <input type="password" id="auth-pass" placeholder="密碼">
+        </div>
+        <div class="auth-row">
+          <button class="btn-add" id="btn-login">登入</button>
+          <button class="btn-theme" id="btn-signup">註冊</button>
+        </div>
+        <div class="auth-msg" id="auth-msg"></div>
+        <div class="auth-note">🔗 登入後，工作紀錄／習慣／任務會自動同步到 Firebase（本機仍保留一份）</div>
+      </div>
+      <div id="auth-in" style="display:none">
+        <div class="auth-inline">✅ 已登入：<b id="auth-user"></b></div>
+        <button class="btn-theme" id="btn-logout">登出</button>
+      </div>
+    </div>
+
     <div class="tabs">
       <button class="active" id="tab-work" data-panel="panel-work">🍅 工作</button>
       <button id="tab-habits" data-panel="panel-habits">📈 習慣</button>
@@ -491,7 +523,90 @@
     </div>
   </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script>
+  /* ===== Firebase 初始化＋登入＋雲端同步 ===== */
+  let auth = null, db = null;
+  if (window.FIREBASE_CONFIG && window.firebase) {
+    try {
+      firebase.initializeApp(window.FIREBASE_CONFIG);
+      auth = firebase.auth();
+      db = firebase.firestore();
+    } catch (e) { console.warn('Firebase init failed', e); }
+  }
+
+  const gid = (id) => document.getElementById(id);
+  const uid = () => (auth && auth.currentUser ? auth.currentUser.uid : null);
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const dataRef = (name) => db.doc('users/' + uid() + '/data/' + name);
+  const mergeArrays = (local, cloud) => {
+    const byId = new Map();
+    [...cloud, ...local].forEach((it) => {
+      if (!it || it.id == null) return;
+      const old = byId.get(it.id);
+      if (!old || (it.updatedAt || 0) >= (old.updatedAt || 0)) byId.set(it.id, it);
+    });
+    return [...byId.values()];
+  };
+  const pushSync = (name, arr) => {
+    if (!uid() || !db) return;
+    dataRef(name).set({ items: arr.map((a) => ({ ...a })), updatedAt: Date.now() }).catch(() => {});
+  };
+  const saveLocal = (name, arr) => {
+    if (name === 'records') localStorage.setItem(RECORDS_KEY, JSON.stringify(arr));
+    else if (name === 'habits') localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    else localStorage.setItem(TASKS_KEY, JSON.stringify(arr));
+  };
+  const pullAll = async () => {
+    if (!uid() || !db) return;
+    for (const name of ['records', 'habits', 'tasks']) {
+      const arr = name === 'records' ? records : name === 'habits' ? habits : tasks;
+      try {
+        const snap = await dataRef(name).get();
+        if (!snap.exists) continue;
+        const merged = mergeArrays(arr, snap.data().items || []);
+        if (merged.length !== arr.length) {
+          if (name === 'records') records = merged;
+          else if (name === 'habits') habits = merged;
+          else tasks = merged;
+          saveLocal(name, merged);
+          renderAll();
+        }
+      } catch (e) {}
+    }
+  };
+
+  const renderAuth = (user) => {
+    if (!auth) return;
+    gid('auth-out').style.display = user ? 'none' : '';
+    gid('auth-in').style.display = user ? '' : 'none';
+    if (user) gid('auth-user').textContent = user.email || user.displayName || uid();
+  };
+  const authMsg = (t) => { const el = gid('auth-msg'); if (el) el.textContent = t; };
+  if (auth) {
+    firebase.auth().onAuthStateChanged((user) => {
+      renderAuth(user);
+      if (user) pullAll();
+    });
+    gid('btn-google').addEventListener('click', () => {
+      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch((e) => authMsg('Google 登入失敗：' + e.message));
+    });
+    gid('btn-login').addEventListener('click', () => {
+      const em = gid('auth-email').value.trim(), pw = gid('auth-pass').value;
+      if (!em || !pw) { authMsg('請填 Email 與密碼'); return; }
+      auth.signInWithEmailAndPassword(em, pw).catch((e) => authMsg(e.message));
+    });
+    gid('btn-signup').addEventListener('click', () => {
+      const em = gid('auth-email').value.trim(), pw = gid('auth-pass').value;
+      if (!em || !pw) { authMsg('請填 Email 與密碼'); return; }
+      auth.createUserWithEmailAndPassword(em, pw).catch((e) => authMsg(e.message));
+    });
+    gid('btn-logout').addEventListener('click', () => auth.signOut());
+  }
+
   /* ===== 頁籤切換 ===== */
   document.querySelectorAll('.tabs button').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -522,48 +637,52 @@
   const taskList = document.getElementById('task-list');
   const taskEmpty = document.getElementById('task-empty');
   const taskInput = document.getElementById('task-input');
+  let tasks = [];
+  try {
+    tasks = JSON.parse(localStorage.getItem(TASKS_KEY) || '[]').map((t, i) => ({ id: t.id || newId(), text: t.text, done: !!t.done, updatedAt: t.updatedAt || Date.now() }));
+  } catch (e) { tasks = []; }
 
   const saveTasks = () => {
-    const tasks = [];
-    taskList.querySelectorAll('li').forEach((li) => {
-      tasks.push({ text: li.querySelector('.label').textContent, done: li.querySelector('input[type="checkbox"]').checked });
-    });
     localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+    pushSync('tasks', tasks);
   };
-  const updateTaskEmpty = () => { taskEmpty.style.display = taskList.children.length ? 'none' : 'block'; };
-  const addTask = (text, done = false) => {
-    const li = document.createElement('li');
-    if (done) li.classList.add('done');
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = done;
-    cb.addEventListener('change', () => { li.classList.toggle('done', cb.checked); saveTasks(); });
-    const span = document.createElement('span');
-    span.className = 'label';
-    span.textContent = text;
-    const del = document.createElement('button');
-    del.className = 'del';
-    del.textContent = '✕';
-    del.title = '刪除';
-    del.addEventListener('click', () => { li.remove(); saveTasks(); updateTaskEmpty(); });
-    li.append(cb, span, del);
-    taskList.appendChild(li);
+  const renderTasks = () => {
+    taskList.innerHTML = '';
+    tasks.forEach((t) => {
+      const li = document.createElement('li');
+      if (t.done) li.classList.add('done');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = t.done;
+      cb.addEventListener('change', () => { t.done = cb.checked; t.updatedAt = Date.now(); saveTasks(); renderTasks(); });
+      const span = document.createElement('span');
+      span.className = 'label';
+      span.textContent = t.text;
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '✕';
+      del.title = '刪除';
+      del.addEventListener('click', () => { tasks = tasks.filter((x) => x.id !== t.id); saveTasks(); renderTasks(); });
+      li.append(cb, span, del);
+      taskList.appendChild(li);
+    });
     updateTaskEmpty();
   };
-  const loadTasks = () => {
-    try { JSON.parse(localStorage.getItem(TASKS_KEY) || '[]').forEach((t) => addTask(t.text, t.done)); } catch (e) {}
+  const updateTaskEmpty = () => { taskEmpty.style.display = tasks.length ? 'none' : 'block'; };
+  const addTask = (text) => {
+    tasks.push({ id: newId(), text, done: false, updatedAt: Date.now() });
+    saveTasks();
+    renderTasks();
   };
   document.getElementById('btn-add').addEventListener('click', () => {
     const t = taskInput.value.trim();
     if (!t) return;
     addTask(t);
-    saveTasks();
     taskInput.value = '';
     taskInput.focus();
   });
   taskInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('btn-add').click(); });
-  loadTasks();
-  updateTaskEmpty();
+  renderTasks();
 
   /* ===== 番茄鐘 ===== */
   const BREAK = 5 * 60;
@@ -612,7 +731,7 @@
         playAlarm();
         if (mode === 'work') {
           cycles++; mode = 'break'; remain = BREAK;
-          addRecord({ id: uid(), date: dstr(new Date()), ts: Date.now(), type: 'timer', text: `🍅 番茄鐘（${workMin} 分鐘）`, min: workMin });
+          addRecord({ id: rid(), date: dstr(new Date()), ts: Date.now(), type: 'timer', text: `🍅 番茄鐘（${workMin} 分鐘）`, min: workMin });
           renderRecent(); renderProdStats();
         }
         else { mode = 'work'; remain = workMin * 60; }
@@ -672,8 +791,8 @@
 
   const STORAGE_KEY = 'habit-tracker';
   let habits = [];
-  try { habits = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { habits = []; }
-  const saveHabits = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+  try { habits = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]').map((h, i) => ({ ...h, id: h.id || newId(), updatedAt: h.updatedAt || Date.now() })); } catch (e) { habits = []; }
+  const saveHabits = () => { localStorage.setItem(STORAGE_KEY, JSON.stringify(habits)); pushSync('habits', habits); };
   const calcStreak = (h) => {
     let streak = 0;
     let d = new Date(today);
@@ -746,6 +865,7 @@
         cell.addEventListener('click', () => {
           if (h.done[key]) delete h.done[key];
           else h.done[key] = true;
+          h.updatedAt = Date.now();
           saveHabits();
           renderHabits();
         });
@@ -785,7 +905,7 @@
   const addHabit = () => {
     const n = habitInput.value.trim();
     if (!n) return;
-    habits.push({ name: n, emoji: selectedEmoji, done: {} });
+    habits.push({ id: newId(), name: n, emoji: selectedEmoji, done: {}, updatedAt: Date.now() });
     saveHabits();
     renderHabits();
     habitInput.value = '';
@@ -804,9 +924,9 @@
 
   let records = [];
   try { records = JSON.parse(localStorage.getItem(RECORDS_KEY) || '[]'); } catch (e) { records = []; }
-  const saveRecords = () => localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
-  const addRecord = (rec) => { records.push(rec); saveRecords(); };
-  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const saveRecords = () => { localStorage.setItem(RECORDS_KEY, JSON.stringify(records)); pushSync('records', records); };
+  const addRecord = (rec) => { records.push({ ...rec, updatedAt: Date.now() }); saveRecords(); };
+  const rid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const pad2 = (n) => String(n).padStart(2, '0');
   const fmtHM = (ts) => { const d = new Date(ts); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
   const fmtMin = (min) => { min = Math.round(min); const h = Math.floor(min / 60); const m = min % 60; return h > 0 ? `${h} 小時${m ? ` ${m} 分` : ''}` : `${m} 分`; };
@@ -850,7 +970,7 @@
   const updateRecord = (id, patch) => {
     const idx = records.findIndex((r) => r.id === id);
     if (idx === -1) return;
-    records[idx] = { ...records[idx], ...patch };
+    records[idx] = { ...records[idx], ...patch, updatedAt: Date.now() };
     saveRecords();
     refreshViews();
   };
@@ -938,7 +1058,7 @@
   document.getElementById('btn-end-session').addEventListener('click', () => {
     if (!activeSession) return;
     const min = Math.round((Date.now() - activeSession.startTs) / 60000 * 10) / 10;
-    addRecord({ id: uid(), date: dstr(new Date()), ts: activeSession.startTs, type: 'session', text: activeSession.text, est: activeSession.est || null, min, done: true });
+    addRecord({ id: rid(), date: dstr(new Date()), ts: activeSession.startTs, type: 'session', text: activeSession.text, est: activeSession.est || null, min, done: true });
     stopSessionTimer();
     activeSession = null;
     saveActiveSession();
@@ -959,7 +1079,7 @@
     const text = input.value.trim();
     if (!text) { input.focus(); return; }
     const min = parseInt(document.getElementById('log-min').value, 10) || null;
-    addRecord({ id: uid(), date: dstr(new Date()), ts: Date.now(), type: 'manual', text, min });
+    addRecord({ id: rid(), date: dstr(new Date()), ts: Date.now(), type: 'manual', text, min });
     input.value = '';
     document.getElementById('log-min').value = '';
     renderRecent();
@@ -1187,6 +1307,10 @@
   renderSession();
   if (activeSession) { sessTimer = setInterval(tickSession, 1000); tickSession(); }
   loadAiSettings();
+
+  /* 全量重繪（雲端 pull 後使用） */
+  const renderAll = () => { renderTasks(); renderRecent(); renderHabits(); renderProdStats(); applyQuery(); };
+  window.addEventListener('focus', () => { if (uid()) pullAll(); });
 </script>
 </body>
 </html>
