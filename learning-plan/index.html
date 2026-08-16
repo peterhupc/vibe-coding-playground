@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Coding 一週實戰計畫（互動式 to-do list）</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --text:#1f2937; --muted:#6b7280;
+  --accent:#4f46e5; --accent2:#7c3aed; --done:#10b981; --border:#e5e7eb;
+  --bar-bg:#e5e7eb;
+}
+[data-theme="dark"]{
+  --bg:#111827; --card:#1f2937; --text:#f9fafb; --muted:#9ca3af;
+  --accent:#818cf8; --accent2:#a78bfa; --done:#34d399; --border:#374151;
+  --bar-bg:#374151;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:"Segoe UI","Microsoft JhengHei",sans-serif;line-height:1.6;padding:24px 16px 60px}
+.wrap{max-width:760px;margin:0 auto}
+header{text-align:center;margin-bottom:24px}
+header h1{font-size:1.6rem;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+header p{color:var(--muted);font-size:.9rem;margin-top:6px}
+.theme-btn{position:absolute;top:16px;right:16px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.85rem}
+.progress-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:24px;text-align:center}
+.progress-card .num{font-size:2.4rem;font-weight:800;color:var(--accent)}
+.progress-card .sub{color:var(--muted);font-size:.85rem;margin-top:2px}
+.bar{background:var(--bar-bg);border-radius:999px;height:14px;margin-top:14px;overflow:hidden}
+.bar>div{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--done));transition:width .4s ease}
+.stat{display:flex;justify-content:space-around;margin-top:14px;color:var(--muted);font-size:.85rem}
+.stat b{color:var(--text)}
+.day{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
+.day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.day-head h2{font-size:1.05rem;display:flex;align-items:center;gap:8px}
+.day-head h2 .chip{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;font-size:.7rem;padding:2px 10px;border-radius:999px;font-weight:700}
+.day-head .goal{color:var(--muted);font-size:.8rem;text-align:right}
+.todo{display:flex;align-items:flex-start;gap:10px;padding:10px 8px;border-radius:10px;cursor:pointer;transition:background .15s}
+.todo:hover{background:rgba(79,70,229,.06)}
+.todo input[type="checkbox"]{width:20px;height:20px;accent-color:var(--accent);flex-shrink:0;margin-top:2px;cursor:pointer}
+.todo .label{flex:1;font-size:.93rem}
+.todo .label.done{text-decoration:line-through;color:var(--muted)}
+.todo .stamp{font-size:.72rem;color:var(--done);white-space:nowrap;padding-top:3px}
+.days-overview{margin-bottom:16px}
+.days-overview a{display:inline-block;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:.8rem;color:var(--text);text-decoration:none;margin:2px}
+.days-overview a.done{color:var(--done);border-color:var(--done)}
+footer{text-align:center;color:var(--muted);font-size:.78rem;margin-top:28px}
+.reset{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:4px 10px;cursor:pointer;font-size:.75rem;margin-top:10px}
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn">🌙 深色</button>
+<div class="wrap">
+<header>
+  <h1>🚀 Vibe Coding 一週實戰計畫</h1>
+  <p>每天 1–2 小時 · 目標：做出你的第一版 Productivity App · 勾選即劃掉、自動記錄時間、進度自動上升</p>
+</header>
+
+<div class="progress-card">
+  <div class="num" id="pct">0%</div>
+  <div class="sub">整體進度</div>
+  <div class="bar"><div id="barFill"></div></div>
+  <div class="stat">
+    <span>✅ 已完成 <b id="cDone">0</b></span>
+    <span>📝 總任務 <b id="cTotal">0</b></span>
+    <span>🗓️ 今日完成 <b id="cToday">0</b></span>
+  </div>
+</div>
+
+<div class="days-overview" id="daysOverview"></div>
+
+<section class="day">
+  <div class="day-head"><h2><span class="chip">Day 1</span>環境與心法</h2><div class="goal">🎯 確認工具鏈、理解 Vibe Coding 核心</div></div>
+  <div class="todo"><input type="checkbox" data-id="d1t1"><div class="label">確認 OpenCode 已安裝且能正常啟動</div></div>
+  <div class="todo"><input type="checkbox" data-id="d1t2"><div class="label">設定並登入免費模型（Antigravity OAuth，或確認現有模型可用）</div></div>
+  <div class="todo"><input type="checkbox" data-id="d1t3"><div class="label">讀完 Vibe Coding 核心概念：你的角色是「定義系統意圖與整體架構」，語法細節交給 AI</div></div>
+  <div class="todo"><input type="checkbox" data-id="d1t4"><div class="label">記下本週目標：做出可追蹤工作、自動存檔、可查詢、有分析的 Productivity App 雛形</div></div>
+</section>
+
+<section class="day">
+  <div class="day-head"><h2><span class="chip">Day 2</span>熱身：描述-測試-修正循環</h2><div class="goal">🎯 體驗「對話即開發」</div></div>
+  <div class="todo"><input type="checkbox" data-id="d2t1"><div class="label">請 OpenCode 做「隨機顏色產生器」或「點擊計數器」網頁（10–30 分鐘）</div></div>
+  <div class="todo"><input type="checkbox" data-id="d2t2"><div class="label">在瀏覽器測試，把問題用中文回餵給 AI 修正</div></div>
+  <div class="todo"><input type="checkbox" data-id="d2t3"><div class="label">加一個新功能（新按鈕或漸層色），體驗漸進式迭代</div></div>
+</section>
+
+<section class="day">
+  <div class="day-head"><h2><span class="chip">Day 3</span>第一個生產力工具：任務清單＋番茄鐘</h2><div class="goal">🎯 追蹤「正在做的工作」</div></div>
+  <div class="todo"><input type="checkbox" data-id="d3t1"><div class="label">用 OpenCode 建立「任務清單」網頁（可新增、勾選完成、刪除）</div></div>
+  <div class="todo"><input type="checkbox" data-id="d3t2"><div class="label">建立 25 分鐘工作＋5 分鐘休息的番茄鐘計時器</div></div>
+  <div class="todo"><input type="checkbox" data-id="d3t3"><div class="label">測試：新增 3 個任務、跑完一次完整計時</div></div>
+  <div class="todo"><input type="checkbox" data-id="d3t4"><div class="label">升級：加入「倒數結束播放聲音警報」</div></div>
+</section>
+
+<section class="day">
+  <div class="day-head"><h2><span class="chip">Day 4</span>自動儲存：Local Storage＋深色模式</h2><div class="goal">🎯 工作紀錄重新整理後不消失</div></div>
+  <div class="todo"><input type="checkbox" data-id="d4t1"><div class="label">請 OpenCode 幫任務清單加入 Local Storage（關閉/重整後資料保留）</div></div>
+  <div class="todo"><input type="checkbox" data-id="d4t2"><div class="label">新增「深色/淺色模式」切換按鈕</div></div>
+  <div class="todo"><input type="checkbox" data-id="d4t3"><div class="label">測試：新增任務→重整網頁→資料仍在</div></div>
+</section>
+
+<section class="day">
+  <div class="day-head"><h2><span class="chip">Day 5</span>可查詢資料：每日習慣追蹤器</h2><div class="goal">🎯 記錄每天做的事＋連續達成天數</div></div>
+  <div class="todo"><input type="checkbox" data-id="d5t1"><div class="label">建立每日習慣追蹤器（新增習慣＋Emoji 標籤）</div></div>
+  <div class="todo"><input type="checkbox" data-id="d5t2"><div class="label">7 天網格可點擊勾選，每個習慣顯示 Streak（連續達成天數）</div></div>
+  <div class="todo"><input type="checkbox" data-id="d5t3"><div class="label">手動測試連續勾選，確認 Streak 計算正確</div></div>
+  <div class="todo"><input type="checkbox" data-id="d5t4"><div class="label">加入本地儲存，保留歷史習慣紀錄</div></div>
+</section>
+
+<section class="day">
+  <div class="day-head"><h2><span class="chip">Day 6</span>分析洞察：統計圖表＋RWD</h2><div class="goal">🎯 把紀錄視覺化、手機也能看</div></div>
+  <div class="todo"><input type="checkbox" data-id="d6t1"><div class="label">為番茄鐘/習慣追蹤器加入「生產力統計圖表」（柱狀圖或折線圖）</div></div>
+  <div class="todo"><input type="checkbox" data-id="d6t2"><div class="label">顯示「本週每天專注幾分鐘」或「習慣達成率」</div></div>
+  <div class="todo"><input type="checkbox" data-id="d6t3"><div class="label">RWD 響應式：手機、平板、電腦都正常顯示</div></div>
+</section>
+
+<section class="day">
+  <div class="day-head"><h2><span class="chip">Day 7</span>上架與備份收尾</h2><div class="goal">🎯 部署上線、自動化、備份</div></div>
+  <div class="todo"><input type="checkbox" data-id="d7t1"><div class="label">把完成的 App 部署到 Netlify 或 Vercel（免費，手機隨時開）</div></div>
+  <div class="todo"><input type="checkbox" data-id="d7t2"><div class="label">探索自動化 Agent（如 MCP），嘗試自動寄送週報到 Gmail</div></div>
+  <div class="todo"><input type="checkbox" data-id="d7t3"><div class="label">備份收尾：推送到 GitHub 私有 repo＋更新 Obsidian 紀錄</div></div>
+</section>
+
+<footer>
+  進度自動保存在瀏覽器（localStorage）· 換裝置時進度不會跟著走
+  <br><button class="reset" id="resetBtn">重設全部進度</button>
+</footer>
+</div>
+
+<script>
+const KEY="vc-week-plan-v1";
+const THEME_KEY="vc-week-theme";
+const tzOffset=new Date().getTimezoneOffset();
+const todayStr=()=>new Date(Date.now()-tzOffset*60000).toISOString().slice(0,10);
+const fmt=(ts)=>{const d=new Date(ts);const p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`};
+let state=load();
+let totalDone=0;
+
+function load(){
+  try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+
+function applyTheme(theme){
+  document.documentElement.setAttribute("data-theme",theme);
+  document.getElementById("themeBtn").textContent=theme==="dark"?"☀️ 淺色":"🌙 深色";
+}
+const savedTheme=localStorage.getItem(THEME_KEY)||"light";
+applyTheme(savedTheme);
+document.getElementById("themeBtn").onclick=()=>{
+  const cur=document.documentElement.getAttribute("data-theme");
+  const next=cur==="dark"?"light":"dark";
+  localStorage.setItem(THEME_KEY,next);applyTheme(next);
+};
+
+const boxes=[...document.querySelectorAll('input[type="checkbox"]')];
+document.getElementById("cTotal").textContent=boxes.length;
+
+function renderOverview(){
+  const wrap=document.getElementById("daysOverview");
+  wrap.innerHTML="";
+  const days=[...document.querySelectorAll("section.day")];
+  days.forEach((d,idx)=>{
+    const dboxes=d.querySelectorAll('input[type="checkbox"]');
+    const done=[...dboxes].filter(b=>b.checked).length;
+    const all=done===dboxes.length&&dboxes.length>0;
+    const a=document.createElement("a");
+    a.href="#";a.textContent=`Day ${idx+1}`;
+    if(all)a.classList.add("done");
+    a.onclick=(e)=>{e.preventDefault();d.scrollIntoView({behavior:"smooth"})};
+    wrap.appendChild(a);
+  });
+}
+
+function refresh(){
+  boxes.forEach(b=>{
+    const s=state[b.dataset.id];
+    b.checked=!!s;
+    const label=b.parentElement.querySelector(".label");
+    let stamp=b.parentElement.querySelector(".stamp");
+    if(s){
+      label.classList.add("done");
+      if(!stamp){stamp=document.createElement("span");stamp.className="stamp";b.parentElement.appendChild(stamp)}
+      stamp.textContent="完成於 "+fmt(s.ts);
+    }else{
+      label.classList.remove("done");
+      if(stamp)stamp.textContent="";
+    }
+  });
+  totalDone=boxes.filter(b=>b.checked).length;
+  const pct=Math.round(totalDone/boxes.length*100);
+  document.getElementById("pct").textContent=pct+"%";
+  document.getElementById("barFill").style.width=pct+"%";
+  document.getElementById("cDone").textContent=totalDone;
+  document.getElementById("cToday").textContent=boxes.filter(b=>{
+    const s=state[b.dataset.id];return s&&new Date(s.ts).toISOString().slice(0,10)===todayStr();
+  }).length;
+  renderOverview();
+}
+
+boxes.forEach(b=>{
+  b.addEventListener("change",()=>{
+    if(b.checked){
+      state[b.dataset.id]={ts:Date.now()};
+    }else{
+      delete state[b.dataset.id];
+    }
+    save();refresh();
+  });
+});
+
+document.getElementById("resetBtn").onclick=()=>{
+  if(confirm("確定要重設全部進度？此動作無法復原。")){
+    state={};localStorage.removeItem(KEY);refresh();
+  }
+};
+refresh();
+</script>
+</body>
+</html>

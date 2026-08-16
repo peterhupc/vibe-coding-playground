@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的工作台｜任務＋番茄鐘＋習慣</title>
+<style>
+  :root {
+    --bg: #f5f5f4;
+    --card: #ffffff;
+    --ink: #1c1917;
+    --muted: #78716c;
+    --accent: #6366f1;
+    --done: #a8a29e;
+    --work: #6366f1;
+    --break: #16a34a;
+    --danger: #dc2626;
+    --danger-bg: #fef2f2;
+    --input-border: #e7e5e4;
+    --row: #fafaf9;
+    --row-border: #f5f5f4;
+    --soft: #eef2ff;
+    --gray-bg: #f5f5f4;
+    --cell: #f5f5f4;
+    --cell-done: #86efac;
+    --cell-today: #c7d2fe;
+    --streak: #ea580c;
+    --warn: #f59e0b;
+    --tab: #e7e5e4;
+    --tab-ink: #57534e;
+  }
+  body.dark {
+    --bg: #1c1917;
+    --card: #292524;
+    --ink: #fafaf9;
+    --muted: #a8a29e;
+    --accent: #818cf8;
+    --done: #57534e;
+    --work: #818cf8;
+    --break: #4ade80;
+    --danger: #f87171;
+    --danger-bg: #3f1d1d;
+    --input-border: #44403c;
+    --row: #33302e;
+    --row-border: #44403c;
+    --soft: #312e81;
+    --gray-bg: #292524;
+    --cell: #44403c;
+    --cell-done: #15803d;
+    --cell-today: #4338ca;
+    --streak: #fb923c;
+    --warn: #fbbf24;
+    --tab: #44403c;
+    --tab-ink: #d6d3d1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", "Noto Sans TC", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 40px 16px;
+    display: flex;
+    justify-content: center;
+    transition: background 0.3s, color 0.3s;
+  }
+  .wrap { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 20px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  h1 { font-size: 22px; }
+  .card {
+    background: var(--card);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    padding: 28px;
+  }
+  .card h2 { font-size: 16px; margin-bottom: 16px; }
+  body.dark .card { box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+
+  button {
+    border: none;
+    border-radius: 12px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.06s ease, filter 0.15s ease;
+  }
+  button:active { transform: scale(0.94); }
+  .btn-theme { background: var(--soft); color: var(--accent); }
+
+  /* 頁籤 */
+  .tabs { display: flex; gap: 8px; background: var(--tab); padding: 6px; border-radius: 14px; }
+  .tabs button {
+    flex: 1;
+    background: transparent;
+    color: var(--tab-ink);
+    padding: 12px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+  .tabs button.active { background: var(--card); color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .panel { display: none; }
+  .panel.active { display: flex; flex-direction: column; gap: 20px; }
+
+  /* 番茄鐘 */
+  .timer-status { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .timer-display {
+    text-align: center;
+    font-size: 64px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--work);
+    margin: 8px 0 20px;
+    transition: color 0.3s;
+  }
+  .timer-display.break { color: var(--break); }
+  .timer-btns { display: flex; gap: 10px; justify-content: center; }
+  .btn-start { background: var(--work); color: #fff; }
+  .btn-reset { background: var(--soft); color: var(--accent); }
+  .btn-skip { background: var(--gray-bg); color: var(--muted); }
+  .timer-opts { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 16px; font-size: 13px; color: var(--muted); }
+  .timer-opts select {
+    padding: 6px 12px;
+    border: 2px solid var(--input-border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--card);
+    color: var(--ink);
+    outline: none;
+    cursor: pointer;
+  }
+  .timer-opts select:focus { border-color: var(--accent); }
+  .cycles { text-align: center; font-size: 13px; color: var(--muted); margin-top: 14px; }
+
+  /* 任務清單 */
+  .add-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  input[type="text"] {
+    flex: 1;
+    padding: 12px 14px;
+    border: 2px solid var(--input-border);
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+    background: var(--card);
+    color: var(--ink);
+  }
+  input[type="text"]:focus { border-color: var(--accent); }
+  .btn-add { background: var(--accent); color: #fff; padding: 12px 20px; }
+  ul.list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  ul.list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--row);
+    border-radius: 12px;
+    border: 1px solid var(--row-border);
+  }
+  ul.list li input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+  ul.list li .label { flex: 1; font-size: 15px; word-break: break-word; }
+  ul.list li.done .label { color: var(--done); text-decoration: line-through; }
+  ul.list li .del { background: none; color: var(--danger); font-size: 18px; padding: 4px 8px; }
+  .empty { text-align: center; color: var(--muted); font-size: 14px; padding: 12px 0; }
+
+  /* 習慣追蹤器 */
+  .emoji-picker { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .emoji-picker button { background: var(--cell); font-size: 20px; padding: 6px 10px; border-radius: 10px; }
+  .emoji-picker button.active { outline: 3px solid var(--accent); }
+  .habit {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: var(--row);
+    border-radius: 14px;
+    border: 1px solid var(--row-border);
+    margin-bottom: 10px;
+  }
+  .habit .emoji { font-size: 26px; width: 34px; text-align: center; }
+  .habit .name { flex: 1; font-size: 16px; word-break: break-word; }
+  .habit .streak {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--streak);
+    background: color-mix(in srgb, var(--streak) 12%, transparent);
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .grid { display: flex; gap: 4px; }
+  .grid .cell {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--cell);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    border: none;
+    padding: 0;
+    transition: background 0.15s;
+  }
+  .grid .cell:hover { filter: brightness(1.1); }
+  .grid .cell.done { background: var(--cell-done); }
+  .grid .cell.today { outline: 2px solid var(--cell-today); }
+  .grid .cell .dot { color: #166534; font-weight: 700; }
+  body.dark .grid .cell.done .dot { color: #bbf7d0; }
+  .day-heads { display: flex; gap: 4px; margin: 0 0 6px 46px; }
+  .day-heads span { width: 30px; text-align: center; font-size: 11px; color: var(--muted); }
+
+  /* 統計圖表 */
+  .stats-title { font-size: 16px; margin-bottom: 6px; }
+  .stats-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .chart { display: flex; align-items: flex-end; gap: 10px; height: 160px; padding: 0 4px; }
+  .chart .col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+  .chart .bar-wrap { width: 100%; max-width: 42px; height: 100%; display: flex; align-items: flex-end; }
+  .chart .bar { width: 100%; border-radius: 8px 8px 4px 4px; background: var(--accent); min-height: 4px; transition: height 0.4s ease; position: relative; }
+  .chart .bar.low { background: var(--warn); }
+  .chart .bar.zero { background: var(--cell); }
+  .chart .bar .pct { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+  .chart .day-label { font-size: 11px; color: var(--muted); }
+  .chart .day-label.today { font-weight: 700; color: var(--accent); }
+  .chart-note { font-size: 12px; color: var(--muted); margin-top: 14px; }
+
+  /* RWD：手機 */
+  @media (max-width: 480px) {
+    body { padding: 24px 12px; }
+    .card { padding: 20px 16px; }
+    h1 { font-size: 18px; }
+    .habit { flex-wrap: wrap; gap: 8px; }
+    .habit .name { flex-basis: calc(100% - 120px); }
+    .habit .streak { order: 3; }
+    .grid { order: 4; width: 100%; justify-content: space-between; }
+    .grid .cell { width: calc((100vw - 120px) / 7); max-width: 38px; height: 34px; }
+    .day-heads { margin-left: 0; }
+    .day-heads span { width: calc((100vw - 120px) / 7); max-width: 38px; }
+    .chart { height: 140px; gap: 6px; }
+    .emoji-picker button { font-size: 17px; padding: 5px 8px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>🛠️ 我的工作台</h1>
+      <button class="btn-theme" id="btn-theme">🌙 深色</button>
+    </div>
+
+    <div class="tabs">
+      <button class="active" id="tab-work" data-panel="panel-work">🍅 工作</button>
+      <button id="tab-habits" data-panel="panel-habits">📈 習慣</button>
+    </div>
+
+    <!-- 工作：番茄鐘＋任務 -->
+    <div class="panel active" id="panel-work">
+      <div class="card">
+        <h2>🍅 番茄鐘</h2>
+        <div class="timer-status" id="timer-status">準備開始（工作 25 分鐘）</div>
+        <div class="timer-display" id="timer-display">25:00</div>
+        <div class="timer-btns">
+          <button class="btn-start" id="btn-start">開始</button>
+          <button class="btn-skip" id="btn-skip">跳過</button>
+          <button class="btn-reset" id="btn-reset">重設</button>
+        </div>
+        <div class="timer-opts">
+          <label for="work-select">工作時間</label>
+          <select id="work-select"></select>
+        </div>
+        <div class="cycles" id="cycles">已完成番茄：0 個</div>
+      </div>
+
+      <div class="card">
+        <h2>📋 任務清單</h2>
+        <div class="add-row">
+          <input type="text" id="task-input" placeholder="輸入任務，按 Enter 新增">
+          <button class="btn-add" id="btn-add">新增</button>
+        </div>
+        <ul class="list" id="task-list"></ul>
+        <div class="empty" id="task-empty">還沒有任務，新增一個吧</div>
+      </div>
+    </div>
+
+    <!-- 習慣 -->
+    <div class="panel" id="panel-habits">
+      <div class="card">
+        <div class="add-row">
+          <input type="text" id="habit-name" placeholder="輸入習慣名稱，如：喝 8 杯水">
+          <button class="btn-add" id="btn-add-habit">新增</button>
+        </div>
+        <div class="emoji-picker" id="emoji-picker"></div>
+      </div>
+
+      <div class="card">
+        <div class="stats-title">📊 本週達成率</div>
+        <div class="stats-sub" id="stats-sub"></div>
+        <div class="chart" id="chart"></div>
+        <div class="chart-note">每天達成率 = 當天勾選的習慣數 ÷ 習慣總數</div>
+      </div>
+
+      <div class="card">
+        <div class="day-heads" id="day-heads"></div>
+        <div id="habit-list"></div>
+        <div class="empty" id="habit-empty">還沒有習慣，先新增一個吧</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  /* ===== 頁籤切換 ===== */
+  document.querySelectorAll('.tabs button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tabs button').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
+      document.getElementById(btn.dataset.panel).classList.add('active');
+    });
+  });
+
+  /* ===== 深色模式（統一） ===== */
+  const THEME_KEY = 'app-theme';
+  const applyTheme = (dark) => {
+    document.body.classList.toggle('dark', dark);
+    document.getElementById('btn-theme').textContent = dark ? '☀️ 淺色' : '🌙 深色';
+    localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
+  };
+  const savedTheme = localStorage.getItem(THEME_KEY)
+    || localStorage.getItem('todo-theme')
+    || localStorage.getItem('habit-theme');
+  applyTheme(savedTheme === 'dark');
+  document.getElementById('btn-theme').addEventListener('click', () => {
+    applyTheme(!document.body.classList.contains('dark'));
+  });
+
+  /* ===== 任務清單（沿用 day3 key：todo-tasks） ===== */
+  const TASKS_KEY = 'todo-tasks';
+  const taskList = document.getElementById('task-list');
+  const taskEmpty = document.getElementById('task-empty');
+  const taskInput = document.getElementById('task-input');
+
+  const saveTasks = () => {
+    const tasks = [];
+    taskList.querySelectorAll('li').forEach((li) => {
+      tasks.push({ text: li.querySelector('.label').textContent, done: li.querySelector('input[type="checkbox"]').checked });
+    });
+    localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+  };
+  const updateTaskEmpty = () => { taskEmpty.style.display = taskList.children.length ? 'none' : 'block'; };
+  const addTask = (text, done = false) => {
+    const li = document.createElement('li');
+    if (done) li.classList.add('done');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = done;
+    cb.addEventListener('change', () => { li.classList.toggle('done', cb.checked); saveTasks(); });
+    const span = document.createElement('span');
+    span.className = 'label';
+    span.textContent = text;
+    const del = document.createElement('button');
+    del.className = 'del';
+    del.textContent = '✕';
+    del.title = '刪除';
+    del.addEventListener('click', () => { li.remove(); saveTasks(); updateTaskEmpty(); });
+    li.append(cb, span, del);
+    taskList.appendChild(li);
+    updateTaskEmpty();
+  };
+  const loadTasks = () => {
+    try { JSON.parse(localStorage.getItem(TASKS_KEY) || '[]').forEach((t) => addTask(t.text, t.done)); } catch (e) {}
+  };
+  document.getElementById('btn-add').addEventListener('click', () => {
+    const t = taskInput.value.trim();
+    if (!t) return;
+    addTask(t);
+    saveTasks();
+    taskInput.value = '';
+    taskInput.focus();
+  });
+  taskInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('btn-add').click(); });
+  loadTasks();
+  updateTaskEmpty();
+
+  /* ===== 番茄鐘 ===== */
+  const BREAK = 5 * 60;
+  let workMin = 25;
+  let remain = workMin * 60, running = false, mode = 'work', cycles = 0, timer = null;
+  const display = document.getElementById('timer-display');
+  const statusEl = document.getElementById('timer-status');
+  const startBtn = document.getElementById('btn-start');
+  const cyclesEl = document.getElementById('cycles');
+  let audioCtx = null;
+  const playAlarm = () => {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      for (let i = 0; i < 3; i++) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = 880;
+        const t = now + i * 0.25;
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.22);
+      }
+    } catch (e) {}
+  };
+  const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  const renderTimer = () => {
+    display.textContent = fmt(remain);
+    display.classList.toggle('break', mode === 'break');
+    statusEl.textContent = running
+      ? (mode === 'work' ? '工作中，專注！' : '休息中，放鬆一下')
+      : (mode === 'work' ? `準備開始（工作 ${workMin} 分鐘）` : '休息 5 分鐘，準備好了再開始');
+    startBtn.textContent = running ? '暫停' : '繼續';
+    cyclesEl.textContent = `已完成番茄：${cycles} 個`;
+  };
+  const startTimer = () => {
+    if (running) return;
+    running = true;
+    timer = setInterval(() => {
+      remain--;
+      if (remain <= 0) {
+        playAlarm();
+        if (mode === 'work') { cycles++; mode = 'break'; remain = BREAK; }
+        else { mode = 'work'; remain = workMin * 60; }
+        renderTimer();
+        return;
+      }
+      renderTimer();
+    }, 1000);
+    renderTimer();
+  };
+  const pauseTimer = () => { running = false; clearInterval(timer); renderTimer(); };
+  startBtn.addEventListener('click', () => {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    running ? pauseTimer() : startTimer();
+  });
+  document.getElementById('btn-reset').addEventListener('click', () => { pauseTimer(); mode = 'work'; remain = workMin * 60; renderTimer(); });
+  document.getElementById('btn-skip').addEventListener('click', () => {
+    pauseTimer();
+    if (mode === 'work') { mode = 'break'; remain = BREAK; }
+    else { mode = 'work'; remain = workMin * 60; }
+    renderTimer();
+  });
+  const workSelect = document.getElementById('work-select');
+  for (let m = 5; m <= 60; m += 5) {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = `${m} 分鐘`;
+    if (m === workMin) opt.selected = true;
+    workSelect.appendChild(opt);
+  }
+  workSelect.addEventListener('change', () => {
+    workMin = parseInt(workSelect.value, 10);
+    if (!running && mode === 'work') {
+      remain = workMin * 60;
+      renderTimer();
+    }
+  });
+  renderTimer();
+
+  /* ===== 習慣追蹤器（沿用 day5 key：habit-tracker） ===== */
+  const dstr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const today = new Date();
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    days.push(d);
+  }
+  const todayStr = dstr(today);
+  const wd = ['日', '一', '二', '三', '四', '五', '六'];
+  const dayHeads = document.getElementById('day-heads');
+  days.forEach((d, i) => {
+    const s = document.createElement('span');
+    s.textContent = i === 6 ? '今' : wd[d.getDay()];
+    dayHeads.appendChild(s);
+  });
+
+  const STORAGE_KEY = 'habit-tracker';
+  let habits = [];
+  try { habits = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { habits = []; }
+  const saveHabits = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+  const calcStreak = (h) => {
+    let streak = 0;
+    let d = new Date(today);
+    if (!h.done[dstr(d)]) d.setDate(d.getDate() - 1);
+    while (h.done[dstr(d)]) { streak++; d.setDate(d.getDate() - 1); }
+    return streak;
+  };
+
+  const habitList = document.getElementById('habit-list');
+  const habitEmpty = document.getElementById('habit-empty');
+
+  const renderStats = () => {
+    const chart = document.getElementById('chart');
+    const sub = document.getElementById('stats-sub');
+    chart.innerHTML = '';
+    if (habits.length === 0) { sub.textContent = '新增習慣後，這裡會顯示每日達成率圖表'; return; }
+    sub.textContent = `共 ${habits.length} 個習慣 · 最近 7 天`;
+    days.forEach((d, di) => {
+      const key = dstr(d);
+      let doneCount = 0;
+      habits.forEach((h) => { if (h.done[key]) doneCount++; });
+      const rate = Math.round((doneCount / habits.length) * 100);
+      const col = document.createElement('div');
+      col.className = 'col';
+      const wrap = document.createElement('div');
+      wrap.className = 'bar-wrap';
+      const bar = document.createElement('div');
+      bar.className = 'bar' + (rate === 0 ? ' zero' : rate < 50 ? ' low' : '');
+      bar.style.height = `${Math.max(rate, 4)}%`;
+      const pct = document.createElement('span');
+      pct.className = 'pct';
+      pct.textContent = `${rate}%`;
+      bar.appendChild(pct);
+      wrap.appendChild(bar);
+      const label = document.createElement('span');
+      label.className = 'day-label' + (key === todayStr ? ' today' : '');
+      label.textContent = di === 6 ? '今' : wd[d.getDay()];
+      col.append(wrap, label);
+      chart.appendChild(col);
+    });
+  };
+
+  const renderHabits = () => {
+    renderStats();
+    habitList.innerHTML = '';
+    habits.forEach((h, hi) => {
+      const row = document.createElement('div');
+      row.className = 'habit';
+      const emoji = document.createElement('span');
+      emoji.className = 'emoji';
+      emoji.textContent = h.emoji || '📌';
+      const name = document.createElement('span');
+      name.className = 'name';
+      name.textContent = h.name;
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      days.forEach((d) => {
+        const key = dstr(d);
+        const cell = document.createElement('button');
+        cell.className = 'cell';
+        cell.title = `${wd[d.getDay()]} ${d.getMonth() + 1}/${d.getDate()}`;
+        if (key === todayStr) cell.classList.add('today');
+        if (h.done[key]) {
+          cell.classList.add('done');
+          const dot = document.createElement('span');
+          dot.className = 'dot';
+          dot.textContent = '✓';
+          cell.appendChild(dot);
+        }
+        cell.addEventListener('click', () => {
+          if (h.done[key]) delete h.done[key];
+          else h.done[key] = true;
+          saveHabits();
+          renderHabits();
+        });
+        grid.appendChild(cell);
+      });
+      const streak = document.createElement('span');
+      streak.className = 'streak';
+      streak.textContent = `🔥 ${calcStreak(h)} 天`;
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '✕';
+      del.title = '刪除習慣';
+      del.addEventListener('click', () => { habits.splice(hi, 1); saveHabits(); renderHabits(); });
+      row.append(emoji, name, streak, grid, del);
+      habitList.appendChild(row);
+    });
+    habitEmpty.style.display = habits.length ? 'none' : 'block';
+  };
+
+  const EMOJIS = ['💧', '🏃', '📖', '🧘', '💪', '🥗', '😴', '✍️', '🦷', '📵'];
+  let selectedEmoji = '💧';
+  const picker = document.getElementById('emoji-picker');
+  EMOJIS.forEach((e) => {
+    const b = document.createElement('button');
+    b.textContent = e;
+    if (e === selectedEmoji) b.classList.add('active');
+    b.addEventListener('click', () => {
+      selectedEmoji = e;
+      picker.querySelectorAll('button').forEach((x) => x.classList.remove('active'));
+      b.classList.add('active');
+    });
+    picker.appendChild(b);
+  });
+  const habitInput = document.getElementById('habit-name');
+  const addHabit = () => {
+    const n = habitInput.value.trim();
+    if (!n) return;
+    habits.push({ name: n, emoji: selectedEmoji, done: {} });
+    saveHabits();
+    renderHabits();
+    habitInput.value = '';
+    habitInput.focus();
+  };
+  document.getElementById('btn-add-habit').addEventListener('click', addHabit);
+  habitInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addHabit(); });
+  renderHabits();
+</script>
+</body>
+</html>

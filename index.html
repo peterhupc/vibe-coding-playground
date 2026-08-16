@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Coding 學習之路</title>
+<style>
+  :root {
+    --bg: #f5f5f4;
+    --card: #ffffff;
+    --ink: #1c1917;
+    --muted: #78716c;
+    --accent: #6366f1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", "Noto Sans TC", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 48px 20px 64px; }
+  header { text-align: center; margin-bottom: 36px; }
+  h1 { font-size: 28px; margin-bottom: 8px; }
+  .sub { color: var(--muted); font-size: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  a.card {
+    display: block;
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    padding: 24px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.12s ease, box-shadow 0.15s ease;
+  }
+  a.card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,0.1); }
+  a.card .emoji { font-size: 30px; margin-bottom: 10px; }
+  a.card .name { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  a.card .desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  footer { text-align: center; margin-top: 40px; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Vibe Coding 學習之路</h1>
+      <p class="sub">Day 2–7 密集衝刺成果 · 一週學習計畫的每個小專案</p>
+    </header>
+    <div class="grid">
+      <a class="card" href="learning-plan/">
+        <div class="emoji">🗺️</div>
+        <div class="name">學習計畫</div>
+        <div class="desc">Day 1–7 客製化 to-do list，勾選進度自動存瀏覽器</div>
+      </a>
+      <a class="card" href="day2-counter/">
+        <div class="emoji">🔢</div>
+        <div class="name">點擊計數器</div>
+        <div class="desc">Day 2 熱身：＋/－/Reset、＋５/－５、長按加速</div>
+      </a>
+      <a class="card" href="day3-todo/">
+        <div class="emoji">🍅</div>
+        <div class="name">任務清單＋番茄鐘</div>
+        <div class="desc">Day 3–4：待辦清單、25 分鐘番茄鐘、Web Audio 鬧鈴、深色模式</div>
+      </a>
+      <a class="card" href="day5-habits/">
+        <div class="emoji">📈</div>
+        <div class="name">習慣追蹤器</div>
+        <div class="desc">Day 5–6：Emoji 習慣、7 天網格、🔥 Streak、本週達成率柱狀圖</div>
+      </a>
+      <a class="card" href="app/">
+        <div class="emoji">🧰</div>
+        <div class="name">整合版工作台</div>
+        <div class="desc">工作＋習慣兩頁籤合一，統一深色模式、資料互通</div>
+      </a>
+    </div>
+    <footer>本機優先（local-first）· 全部資料存瀏覽器 localStorage · 無後端</footer>
+  </div>
+</body>
+</html>
