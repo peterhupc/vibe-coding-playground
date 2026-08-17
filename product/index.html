@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="我的工作台 Productivity App：工作追蹤、自動存檔、查詢、分析，本機優先並可跨裝置同步。">
+<title>我的工作台｜Productivity App</title>
+<style>
+  :root {
+    --bg: #f5f5f4; --card: #ffffff; --ink: #1c1917; --muted: #78716c;
+    --accent: #6366f1; --accent-soft: #eef2ff; --warn: #d97706;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", "Noto Sans TC", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 56px 20px 64px; }
+  .hero { text-align: center; padding: 48px 24px; background: linear-gradient(160deg, #eef2ff, #e0e7ff); border-radius: 24px; margin-bottom: 40px; }
+  .hero .badge { display: inline-block; background: #fff; border: 1px solid #c7d2fe; color: #4338ca; font-size: 13px; font-weight: 700; padding: 4px 14px; border-radius: 999px; margin-bottom: 18px; }
+  .hero h1 { font-size: 36px; margin-bottom: 12px; }
+  .hero .tag { color: #4338ca; font-weight: 700; font-size: 15px; }
+  .hero .desc { color: var(--muted); max-width: 480px; margin: 12px auto 26px; font-size: 15px; }
+  .cta { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; font-weight: 700; padding: 14px 34px; border-radius: 999px; box-shadow: 0 8px 20px rgba(99,102,241,0.35); transition: transform .12s ease; }
+  .cta:hover { transform: translateY(-2px); }
+  h2 { font-size: 22px; margin: 40px 0 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .feature { background: var(--card); border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.06); padding: 20px; }
+  .feature .emoji { font-size: 26px; margin-bottom: 8px; }
+  .feature .name { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+  .feature .desc { font-size: 13px; color: var(--muted); }
+  .sync { background: var(--accent-soft); border: 1px solid #c7d2fe; border-radius: 16px; padding: 20px 24px; font-size: 14px; color: #3730a3; }
+  .sync b { color: #1e1b4b; }
+  ul.check { list-style: none; margin-top: 8px; }
+  ul.check li { padding: 3px 0 3px 24px; position: relative; font-size: 14px; }
+  ul.check li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+  .note { margin-top: 24px; font-size: 12px; color: var(--muted); text-align: center; }
+  footer { text-align: center; margin-top: 48px; color: var(--muted); font-size: 12px; }
+  a.back { color: var(--accent); text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <span class="badge">個人生產力工具</span>
+      <h1>🛠️ 我的工作台</h1>
+      <div class="tag">Productivity App — 追蹤工作・自動存檔・查詢・分析</div>
+      <div class="desc">一份學習「Vibe Coding」的實作成果：用純 HTML／CSS／JS 打造的單檔工作台，資料優先存在本機，登入後可跨裝置同步。</div>
+      <a class="cta" href="../app/">立即開啟 App</a>
+    </div>
+
+    <h2>功能總覽</h2>
+    <div class="grid">
+      <div class="feature"><div class="emoji">🍅</div><div class="name">工作</div><div class="desc">任務清單＋番茄鐘（5–60 分可調）＋工作階段計時，自動暫停與未完成標記。</div></div>
+      <div class="feature"><div class="emoji">📈</div><div class="name">習慣</div><div class="desc">Emoji 習慣追蹤器：7 天網格、🔥 Streak、本週達成率柱狀圖。</div></div>
+      <div class="feature"><div class="emoji">📝</div><div class="name">紀錄</div><div class="desc">工作階段／番茄鐘自動存檔＋手動日誌，每筆可編輯與刪除。</div></div>
+      <div class="feature"><div class="emoji">🔍</div><div class="name">查詢</div><div class="desc">關鍵字＋日期＋類型＋時間量多條件過濾，快速找回過去的工作。</div></div>
+      <div class="feature"><div class="emoji">📊</div><div class="name">分析</div><div class="desc">總時數／日均／次數等 KPI，可選 AI 總結工作表現（金鑰僅存本機）。</div></div>
+      <div class="feature"><div class="emoji">🔄</div><div class="name">同步</div><div class="desc">Google／Email＋密碼登入後自動同步到雲端，手機與電腦資料一致。</div></div>
+    </div>
+
+    <h2>設計原則</h2>
+    <div class="sync">
+      <b>本機優先（local-first）</b>：工作紀錄可能含敏感內容，預設只存自己的瀏覽器。
+      <ul class="check">
+        <li>登入後才同步，資料走 Firebase 的個人空間，規則限定只有本人可讀寫</li>
+        <li>AI 總結用的金鑰只存在本機，絕不上傳</li>
+        <li>支援 JSON 匯出／匯入與一鍵清空，隨時可帶走資料</li>
+      </ul>
+    </div>
+
+    <p class="note"><a class="back" href="../">← 返回 Vibe Coding 學習之路</a></p>
+    <footer>2026・Vibe Coding 學習成果・純 HTML 無建置依賴</footer>
+  </div>
+</body>
+</html>
